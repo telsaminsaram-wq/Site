@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IoT Smart Systems - Home Automation & Water Monitoring</title>
+    <meta name="description" content="Advanced IoT solutions featuring LoRa-based home automation and intelligent water level monitoring systems">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-purple: #a855f7;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --border: rgba(59, 130, 246, 0.2);
+            --glow-blue: rgba(59, 130, 246, 0.3);
+            --glow-cyan: rgba(6, 182, 212, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            background-image: 
+                linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            z-index: -1;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-blue);
+            top: 10%;
+            left: 10%;
+        }
+
+        .orb-2 {
+            width: 350px;
+            height: 350px;
+            background: var(--accent-cyan);
+            top: 50%;
+            right: 10%;
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent-purple);
+            bottom: 10%;
+            left: 50%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        header {
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-blue);
+            letter-spacing: 1px;
+        }
+
+        .logo::before {
+            content: '⚡';
+            font-size: 1.8rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 0.5rem 0;
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .nav-links a:hover::before {
+            width: 100%;
+        }
+
+        .hero {
+            padding: 6rem 0 4rem;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.5rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            color: var(--accent-blue);
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .hero h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(2.5rem, 7vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            letter-spacing: -1px;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan), var(--accent-purple));
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 4s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+            line-height: 1.8;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.8s both;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            color: white;
+            box-shadow: 0 10px 30px var(--glow-blue);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px var(--glow-cyan);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-blue);
+            transform: translateY(-3px);
+        }
+
+        .systems-container {
+            padding: 4rem 0;
+        }
+
+        .system-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .system-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+        }
+
+        .system-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-blue);
+        }
+
+        .system-header {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .system-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            box-shadow: 0 10px 30px var(--glow-blue);
+        }
+
+        .system-title h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .system-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            background: var(--bg-card);
+            border-color: var(--accent-cyan);
+            transform: translateX(5px);
+        }
+
+        .feature-item h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent-cyan);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-item p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .tech-stack {
+            margin-top: 2rem;
+        }
+
+        .tech-stack h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-blue);
+        }
+
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .tech-tag {
+            padding: 0.6rem 1.2rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tech-tag:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .spec-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .spec-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .spec-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .architecture {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        .architecture h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-blue);
+        }
+
+        .arch-diagram {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .arch-node {
+            text-align: center;
+        }
+
+        .arch-node-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin: 0 auto 1rem;
+            box-shadow: 0 10px 30px var(--glow-blue);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .arch-node:nth-child(2) .arch-node-icon {
+            animation-delay: -1s;
+        }
+
+        .arch-node:nth-child(3) .arch-node-icon {
+            animation-delay: -2s;
+        }
+
+        .arch-node-label {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin-bottom: 0.5rem;
+        }
+
+        .arch-node-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            max-width: 150px;
+        }
+
+        .demo-section {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.1));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .demo-section h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .demo-section p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .stats {
+            padding: 4rem 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin: 4rem 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        footer {
+            padding: 4rem 0 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-section h4 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--accent-blue);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-cyan);
+            padding-left: 5px;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .social-links a {
+            width: 45px;
+            height: 45px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .social-links a:hover {
+            background: var(--accent-blue);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px var(--glow-blue);
+        }
+
+        .btn-demo {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            color: white;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-demo:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Dashboard Styles */
+        .dashboard-section {
+            background: var(--bg-secondary);
+            padding: 4rem 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .dashboard-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+            border-color: var(--accent-cyan);
+        }
+
+        .dashboard-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--accent-cyan);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 25px;
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .toggle-switch.active {
+            background: var(--accent-green);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 27px;
+        }
+
+        .dashboard-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin: 0.5rem 0;
+        }
+
+        .dashboard-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .water-tank-visual {
+            width: 100%;
+            height: 120px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .water-level {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, var(--accent-cyan), rgba(6, 182, 212, 0.5));
+            transition: height 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-secondary);
+            outline: none;
+            margin: 0.5rem 0;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            cursor: pointer;
+            border: none;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 0.8rem 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan));
+            color: white;
+            border-color: transparent;
+        }
+
+        .tab-btn:hover:not(.active) {
+            border-color: var(--accent-blue);
+            color: var(--text-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .cctv-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .cctv-feed {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .cctv-feed:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2);
+        }
+
+        .cctv-video {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            position: relative;
+        }
+
+        .recording-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            background: var(--accent-red);
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        .cctv-info {
+            padding: 1rem;
+        }
+
+        .cctv-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .cctv-status {
+            color: var(--accent-green);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 4rem 0 2rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .system-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .arch-diagram {
+                flex-direction: column;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <header>
+        <nav class="container">
+            <div class="logo">Tesla மின்சாரம்</div>
+            <ul class="nav-links">
+                <li><a href="#home-automation">Home Automation</a></li>
+                <li><a href="#water-monitor">Water Monitor</a></li>
+                <li><a href="#dashboard">Live Dashboard</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="#github">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">
+                <span class="status-dot"></span>
+                <span>LoRa-Enabled IoT Solutions</span>
+            </div>
+            <h1>
+                Smart <span class="gradient-text">IoT Systems</span><br>
+                For Modern Living
+            </h1>
+            <p class="hero-description">
+                Advanced home automation and water monitoring solutions powered by LoRa long-range communication. 
+                Control your home remotely and monitor water levels with real-time alerts.
+            </p>
+            <div class="cta-buttons">
+                <a href="#home-automation" class="btn btn-primary">
+                    <span>Explore Systems</span>
+                    <span>→</span>
+                </a>
+                <a href="https://github.com/yourusername/iot-systems" class="btn btn-secondary">
+                    <span>View on GitHub</span>
+                    <span>↗</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="systems-container">
+        <div class="container">
+            
+            <div class="system-card fade-in" id="home-automation">
+                <div class="system-header">
+                    <div class="system-icon">🏠</div>
+                    <div class="system-title">
+                        <h2>LoRa Home Automation System</h2>
+                        <p class="system-subtitle">Control your entire home from anywhere with long-range wireless communication</p>
+                    </div>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <h4>📡 LoRa Communication</h4>
+                        <p>Long-range wireless control up to 10km in rural areas, 2km in urban environments with minimal power consumption</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>💡 Fully Customizable</h4>
+                        <p>Every automation can be tailored to your needs - custom rules, schedules, and triggers for complete control</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🌐 Web & Desktop Apps</h4>
+                        <p>Access your home from responsive web dashboard or native Windows application with offline capability</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🔐 Security & CCTV</h4>
+                        <p>Integrated CCTV monitoring, motion sensors, door contacts, and smart locks with 24/7 recording</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>⚡ Complete Development</h4>
+                        <p>Full-stack development service including hardware setup, firmware, backend API, and custom UI design</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🔌 Smart Automation</h4>
+                        <p>Automated scenes, voice control, energy optimization, and intelligent scheduling for all devices</p>
+                    </div>
+                </div>
+
+                <div class="tech-stack">
+                    <h3>🛠️ Technology Stack</h3>
+                    <div class="tech-tags">
+                        <span class="tech-tag">ESP32 LoRa</span>
+                        <span class="tech-tag">Arduino</span>
+                        <span class="tech-tag">MQTT Protocol</span>
+                        <span class="tech-tag">Node-RED</span>
+                        <span class="tech-tag">React Dashboard</span>
+                        <span class="tech-tag">Firebase</span>
+                        <span class="tech-tag">Relay Modules</span>
+                        <span class="tech-tag">DHT22 Sensors</span>
+                        <span class="tech-tag">PIR Motion</span>
+                    </div>
+                </div>
+
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <div class="spec-value">10km</div>
+                        <div class="spec-label">Max Range</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-value">32</div>
+                        <div class="spec-label">Devices</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-value">24/7</div>
+                        <div class="spec-label">Monitoring</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-value">< 1s</div>
+                        <div class="spec-label">Response Time</div>
+                    </div>
+                </div>
+
+                <div class="architecture">
+                    <h3>System Architecture</h3>
+                    <div class="arch-diagram">
+                        <div class="arch-node">
+                            <div class="arch-node-icon">📱</div>
+                            <div class="arch-node-label">Mobile App</div>
+                            <div class="arch-node-desc">iOS/Android control interface</div>
+                        </div>
+                        <div class="arch-node">
+                            <div class="arch-node-icon">📡</div>
+                            <div class="arch-node-label">LoRa Gateway</div>
+                            <div class="arch-node-desc">Central hub for all devices</div>
+                        </div>
+                        <div class="arch-node">
+                            <div class="arch-node-icon">🔌</div>
+                            <div class="arch-node-label">IoT Nodes</div>
+                            <div class="arch-node-desc">Smart switches & sensors</div>
+                        </div>
+                        <div class="arch-node">
+                            <div class="arch-node-icon">☁️</div>
+                            <div class="arch-node-label">Cloud Server</div>
+                            <div class="arch-node-desc">Data storage & analytics</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <h3>🎬 See It In Action</h3>
+                    <p>Control lights, fans, AC, CCTV, and more from your smartphone or desktop with real-time status updates</p>
+                    <div class="cta-buttons">
+                        <a href="#dashboard" class="btn btn-demo">View Live Dashboard</a>
+                        <a href="#contact" class="btn btn-primary">Request Custom Solution</a>
+                        <a href="https://github.com/teslaminsaram/home-automation" class="btn btn-secondary">View Code →</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="system-card fade-in" id="water-monitor">
+                <div class="system-header">
+                    <div class="system-icon" style="background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green));">💧</div>
+                    <div class="system-title">
+                        <h2>Automatic Water Level Monitoring System</h2>
+                        <p class="system-subtitle">Intelligent water tank monitoring with LoRa-based alerts and automatic pump control</p>
+                    </div>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <h4>📊 Real-Time Monitoring</h4>
+                        <p>Continuous water level tracking with ultrasonic sensors displaying current levels, trends, and predictions</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🚨 Smart Alerts</h4>
+                        <p>Instant notifications for low water, overflow risks, and pump failures via SMS, email, and app push</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>⚙️ Auto Pump Control</h4>
+                        <p>Automated pump activation/deactivation based on water levels with dry-run protection and scheduling</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>📡 LoRa Transmission</h4>
+                        <p>Long-range wireless data transmission from remote tanks without WiFi or cellular coverage needed</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>📈 Usage Analytics</h4>
+                        <p>Detailed water consumption patterns, daily/weekly reports, and leak detection algorithms</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>🔋 Solar Powered</h4>
+                        <p>Self-sufficient operation with solar panels and battery backup for remote installations</p>
+                    </div>
+                </div>
+
+                <div class="tech-stack">
+                    <h3>🛠️ Technology Stack</h3>
+                    <div class="tech-tags">
+                        <span class="tech-tag">ESP32 LoRa SX1276</span>
+                        <span class="tech-tag">Ultrasonic HC-SR04</span>
+                        <span class="tech-tag">Water Flow Sensor</span>
+                        <span class="tech-tag">Node.js Backend</span>
+                        <span class="tech-tag">MongoDB</span>
+                        <span class="tech-tag">Chart.js</span>
+                        <span class="tech-tag">Telegram Bot API</span>
+                        <span class="tech-tag">Relay Module</span>
+                        <span class="tech-tag">Solar Panel 12V</span>
+                    </div>
+                </div>
+
+                <div class="specs-grid">
+                    <div class="spec-item">
+                        <div class="spec-value">±2%</div>
+                        <div class="spec-label">Accuracy</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-value">5min</div>
+                        <div class="spec-label">Update Rate</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-value">15km</div>
+                        <div class="spec-label">LoRa Range</div>
+                    </div>
+                    <div class="spec-item">
+                        <div class="spec-value">30 days</div>
+                        <div class="spec-label">Battery Life</div>
+                    </div>
+                </div>
+
+                <div class="architecture">
+                    <h3>System Architecture</h3>
+                    <div class="arch-diagram">
+                        <div class="arch-node">
+                            <div class="arch-node-icon">💧</div>
+                            <div class="arch-node-label">Water Tank</div>
+                            <div class="arch-node-desc">Ultrasonic level sensor</div>
+                        </div>
+                        <div class="arch-node">
+                            <div class="arch-node-icon">📡</div>
+                            <div class="arch-node-label">LoRa Node</div>
+                            <div class="arch-node-desc">ESP32 transmitter</div>
+                        </div>
+                        <div class="arch-node">
+                            <div class="arch-node-icon">🖥️</div>
+                            <div class="arch-node-label">Gateway</div>
+                            <div class="arch-node-desc">Data receiver & processor</div>
+                        </div>
+                        <div class="arch-node">
+                            <div class="arch-node-icon">📱</div>
+                            <div class="arch-node-label">Dashboard</div>
+                            <div class="arch-node-desc">Web & mobile interface</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-section">
+                    <h3>💧 Monitor Your Water Supply</h3>
+                    <p>Get instant alerts, track consumption, prevent pump failures, and access from web or Windows app</p>
+                    <div class="cta-buttons">
+                        <a href="#dashboard" class="btn btn-demo">View Live Dashboard</a>
+                        <a href="#contact" class="btn btn-primary">Get Custom Quote</a>
+                        <a href="https://github.com/teslaminsaram/water-monitor" class="btn btn-secondary">View Code →</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Live Dashboard Section -->
+    <section class="dashboard-section fade-in" id="dashboard">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-label">Live Dashboard</div>
+                <h2 class="section-title">Real-Time Control Center</h2>
+                <p class="section-description">
+                    Monitor and control all your IoT devices from one unified dashboard
+                </p>
+            </div>
+
+            <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchTab('home')">🏠 Home Automation</button>
+                <button class="tab-btn" onclick="switchTab('water')">💧 Water Monitor</button>
+                <button class="tab-btn" onclick="switchTab('cctv')">📹 CCTV Cameras</button>
+            </div>
+
+            <!-- Home Automation Tab -->
+            <div id="home-tab" class="tab-content active">
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">💡 Living Room</div>
+                            <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                        <div class="dashboard-label">Brightness</div>
+                        <input type="range" class="slider" value="75" min="0" max="100" oninput="updateValue(this, '%')">
+                        <div class="dashboard-value">75%</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">🌀 Fan Speed</div>
+                            <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                        <div class="dashboard-label">Speed Control</div>
+                        <input type="range" class="slider" value="60" min="0" max="100" oninput="updateValue(this, '%')">
+                        <div class="dashboard-value">60%</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">❄️ AC Temperature</div>
+                            <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                        <div class="dashboard-label">Set Temperature</div>
+                        <input type="range" class="slider" value="24" min="16" max="30" oninput="updateValue(this, '°C')">
+                        <div class="dashboard-value">24°C</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">🌡️ Temperature</div>
+                        </div>
+                        <div class="dashboard-value">28.5°C</div>
+                        <div class="dashboard-label">Current Room Temp</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">💧 Humidity</div>
+                        </div>
+                        <div class="dashboard-value">65%</div>
+                        <div class="dashboard-label">Current Humidity</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">⚡ Power Usage</div>
+                        </div>
+                        <div class="dashboard-value">2.4 kW</div>
+                        <div class="dashboard-label">Current Consumption</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">🔐 Security</div>
+                        </div>
+                        <div class="dashboard-value" style="color: var(--accent-green);">Armed</div>
+                        <div class="dashboard-label">All Sensors Active</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">🚪 Main Door</div>
+                            <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                        <div class="dashboard-value" style="color: var(--accent-green);">Locked</div>
+                        <div class="dashboard-label">Smart Lock Status</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Water Monitor Tab -->
+            <div id="water-tab" class="tab-content">
+                <div class="dashboard-grid">
+                    <div class="dashboard-card" style="grid-column: span 2;">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">💧 Main Water Tank</div>
+                        </div>
+                        <div class="water-tank-visual">
+                            <div class="water-level" style="height: 65%;">65%</div>
+                        </div>
+                        <div class="dashboard-label">Capacity: 1000L | Current: 650L</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">🏢 Overhead Tank</div>
+                        </div>
+                        <div class="water-tank-visual" style="height: 100px;">
+                            <div class="water-level" style="height: 85%;">85%</div>
+                        </div>
+                        <div class="dashboard-label">Capacity: 500L</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">💦 Flow Rate</div>
+                        </div>
+                        <div class="dashboard-value" id="flowRate">12.5 L/min</div>
+                        <div class="dashboard-label">Current Water Flow</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">📊 Today's Usage</div>
+                        </div>
+                        <div class="dashboard-value">245 L</div>
+                        <div class="dashboard-label">Last Updated: 2 min ago</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">⚙️ Water Pump</div>
+                            <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                        <div class="dashboard-value" style="color: var(--accent-green);">Running</div>
+                        <div class="dashboard-label">Auto Mode Enabled</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">⏱️ Pump Runtime</div>
+                        </div>
+                        <div class="dashboard-value">2h 15m</div>
+                        <div class="dashboard-label">Today's Total</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">🔋 Battery</div>
+                        </div>
+                        <div class="dashboard-value">92%</div>
+                        <div class="dashboard-label">Solar Charging</div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <div class="dashboard-card-title">📡 LoRa Signal</div>
+                        </div>
+                        <div class="dashboard-value">-75 dBm</div>
+                        <div class="dashboard-label">Excellent</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CCTV Tab -->
+            <div id="cctv-tab" class="tab-content">
+                <div class="cctv-grid">
+                    <div class="cctv-feed">
+                        <div class="cctv-video">
+                            📹
+                            <div class="recording-indicator"></div>
+                        </div>
+                        <div class="cctv-info">
+                            <div class="cctv-title">Front Door Camera</div>
+                            <div class="cctv-status">● Recording • 1920x1080</div>
+                        </div>
+                    </div>
+
+                    <div class="cctv-feed">
+                        <div class="cctv-video">
+                            📹
+                            <div class="recording-indicator"></div>
+                        </div>
+                        <div class="cctv-info">
+                            <div class="cctv-title">Living Room Camera</div>
+                            <div class="cctv-status">● Recording • 1920x1080</div>
+                        </div>
+                    </div>
+
+                    <div class="cctv-feed">
+                        <div class="cctv-video">
+                            📹
+                            <div class="recording-indicator"></div>
+                        </div>
+                        <div class="cctv-info">
+                            <div class="cctv-title">Backyard Camera</div>
+                            <div class="cctv-status">● Recording • 1920x1080</div>
+                        </div>
+                    </div>
+
+                    <div class="cctv-feed">
+                        <div class="cctv-video">
+                            📹
+                            <div class="recording-indicator"></div>
+                        </div>
+                        <div class="cctv-info">
+                            <div class="cctv-title">Garage Camera</div>
+                            <div class="cctv-status">● Recording • 1920x1080</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; text-align: center;">
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        24/7 recording with motion detection alerts • Cloud storage available • Night vision enabled
+                    </p>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 3rem; padding: 2rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.1)); border: 1px solid var(--border); border-radius: 16px;">
+                <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; margin-bottom: 1rem;">Full Development Services</h3>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                    We provide complete IoT solutions including hardware setup, custom firmware, responsive web applications, native Windows desktop apps, mobile apps, and cloud infrastructure.
+                </p>
+                <a href="#contact" class="btn btn-primary">Get Started with Custom Development</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="stats" id="about">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <h2 style="font-family: 'Orbitron', sans-serif; font-size: 2.5rem; margin-bottom: 1rem;">About Tesla மின்சாரம்</h2>
+                <p style="color: var(--text-secondary); font-size: 1.2rem; max-width: 800px; margin: 0 auto;">
+                    We are pioneers in IoT solutions, specializing in LoRa-based home automation and intelligent monitoring systems.
+                </p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">15km</div>
+                    <div class="stat-label">Max LoRa Range</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99.8%</div>
+                    <div class="stat-label">System Uptime</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">< 500ms</div>
+                    <div class="stat-label">Response Time</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Projects Completed</div>
+                </div>
+            </div>
+            <div style="margin-top: 4rem; text-align: center; max-width: 900px; margin-left: auto; margin-right: auto;">
+                <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1.8rem; margin-bottom: 2rem; color: var(--accent-blue);">Our Mission</h3>
+                <p style="color: var(--text-secondary); font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.5rem;">
+                    At Tesla மின்சாரம், we believe in empowering homes and businesses with cutting-edge IoT technology. Our solutions combine the power of LoRa long-range communication with intelligent automation to create systems that are not only smart but also reliable and energy-efficient.
+                </p>
+                <p style="color: var(--text-secondary); font-size: 1.1rem; line-height: 1.8;">
+                    From automated homes that respond to your needs to water monitoring systems that prevent waste and ensure efficiency, we're building the infrastructure for a smarter, more sustainable future.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="systems-container" id="contact">
+        <div class="container">
+            <div class="system-card" style="text-align: center;">
+                <h2 style="font-family: 'Orbitron', sans-serif; font-size: 2.5rem; margin-bottom: 1rem;">Get In Touch</h2>
+                <p style="color: var(--text-secondary); font-size: 1.2rem; margin-bottom: 3rem;">
+                    Have questions or want to discuss your IoT project? We'd love to hear from you!
+                </p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 3rem;">
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 2rem;">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">📧</div>
+                        <h4 style="font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); margin-bottom: 0.5rem;">Email</h4>
+                        <a href="mailto:contact@teslaminsaram.com" style="color: var(--text-secondary); text-decoration: none;">contact@teslaminsaram.com</a>
+                    </div>
+                    
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 2rem;">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">📱</div>
+                        <h4 style="font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); margin-bottom: 0.5rem;">Phone</h4>
+                        <a href="tel:+919876543210" style="color: var(--text-secondary); text-decoration: none;">+91 98765 43210</a>
+                    </div>
+                    
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 2rem;">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">📍</div>
+                        <h4 style="font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); margin-bottom: 0.5rem;">Location</h4>
+                        <p style="color: var(--text-secondary);">Tamil Nadu, India</p>
+                    </div>
+                    
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 2rem;">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">💬</div>
+                        <h4 style="font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); margin-bottom: 0.5rem;">WhatsApp</h4>
+                        <a href="https://wa.me/919876543210" style="color: var(--text-secondary); text-decoration: none;" target="_blank">Chat with us</a>
+                    </div>
+                </div>
+
+                <div style="margin-top: 3rem; padding: 2rem; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.1)); border: 1px solid var(--border); border-radius: 16px;">
+                    <h3 style="font-family: 'Orbitron', sans-serif; font-size: 1.5rem; margin-bottom: 1rem;">Business Hours</h3>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem;">Monday - Saturday: 9:00 AM - 6:00 PM IST</p>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem;">Sunday: Closed</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>⚡ Tesla மின்சாரம்</h4>
+                    <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+                        Building the future of smart homes and automated monitoring with LoRa technology.
+                    </p>
+                    <div class="social-links">
+                        <a href="https://github.com/teslaminsaram" aria-label="GitHub">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                            </svg>
+                        </a>
+                        <a href="https://youtube.com/@teslaminsaram" aria-label="YouTube">📺</a>
+                        <a href="https://wa.me/919876543210" aria-label="WhatsApp">💬</a>
+                        <a href="mailto:contact@teslaminsaram.com" aria-label="Email">✉️</a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Home Automation</h4>
+                    <ul class="footer-links">
+                        <li><a href="#home-automation">Overview</a></li>
+                        <li><a href="#">Setup Guide</a></li>
+                        <li><a href="#">Hardware List</a></li>
+                        <li><a href="#">API Documentation</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Water Monitor</h4>
+                    <ul class="footer-links">
+                        <li><a href="#water-monitor">Overview</a></li>
+                        <li><a href="#">Installation</a></li>
+                        <li><a href="#">Calibration Guide</a></li>
+                        <li><a href="#">Troubleshooting</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/yourusername" id="github">GitHub Repository</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Video Tutorials</a></li>
+                        <li><a href="#">Community Forum</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Tesla மின்சாரம். Open Source IoT Solutions. Built with 💙 for makers and innovators.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            const orbs = document.querySelectorAll('.orb');
+            const x = e.clientX / window.innerWidth;
+            const y = e.clientY / window.innerHeight;
+            
+            orbs.forEach((orb, index) => {
+                const speed = (index + 1) * 20;
+                const offsetX = (x - 0.5) * speed;
+                const offsetY = (y - 0.5) * speed;
+                orb.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            });
+        });
+
+        // Dashboard tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tab + '-tab').classList.add('active');
+        }
+
+        // Update slider values
+        function updateValue(slider, unit) {
+            const value = slider.parentElement.querySelector('.dashboard-value');
+            value.textContent = slider.value + unit;
+        }
+
+        // Simulate real-time flow rate updates
+        setInterval(() => {
+            const flowRate = document.getElementById('flowRate');
+            if (flowRate) {
+                const randomFlow = (10 + Math.random() * 5).toFixed(1);
+                flowRate.textContent = randomFlow + ' L/min';
+            }
+        }, 3000);
+
+        window.switchTab = switchTab;
+        window.updateValue = updateValue;
+    </script>
+</body>
+</html>
